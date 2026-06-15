@@ -260,13 +260,20 @@
       margin-top: 10px;
     }
 
-    /* ── Loading ── */
-    .loading {
+    /* ── Error banner ── */
+    .error-banner {
+      display: none;
+      background: #fff0f0;
+      border: 1px solid #f5c6cb;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 20px;
       font-size: 13px;
-      color: #aaa;
-      text-align: center;
-      padding: 10px 0;
+      color: #a00;
+      line-height: 1.5;
     }
+
+    .error-banner strong { display: block; margin-bottom: 4px; }
 
     /* ── Mobile ── */
     @media (max-width: 520px) {
@@ -322,6 +329,10 @@
         <div class="chart-title">Live Results</div>
         <div id="chart-rows"></div>
         <div id="chart-total" class="chart-total"></div>
+        <div id="error-banner" class="error-banner">
+          <strong>Could not load results</strong>
+          <span id="error-detail"></span>
+        </div>
       </div>
 
     </div>
@@ -342,7 +353,15 @@
 
     // ── Init Supabase ────────────────────────────────────────────────────────
     const { createClient } = supabase;
-    const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    const CREDENTIALS_SET =
+      SUPABASE_URL  !== 'YOUR_SUPABASE_URL' &&
+      SUPABASE_ANON !== 'YOUR_SUPABASE_ANON_KEY';
+
+    const db = createClient(
+      CREDENTIALS_SET ? SUPABASE_URL  : 'https://placeholder.supabase.co',
+      CREDENTIALS_SET ? SUPABASE_ANON : 'placeholder'
+    );
 
     // ── Voter identity ───────────────────────────────────────────────────────
     function getVoterId() {
@@ -363,12 +382,22 @@
 
     // ── Boot ─────────────────────────────────────────────────────────────────
     (async function init() {
+      // Render 0% bars immediately so the chart is never blank
+      renderChart();
+
+      if (!CREDENTIALS_SET) {
+        showError('Supabase credentials are not set. Open index.html and replace YOUR_SUPABASE_URL and YOUR_SUPABASE_ANON_KEY with your project values.');
+        return;
+      }
+
       await fetchCounts();
       renderChart();
+
       if (currentVote !== null) {
         showThankyou();
         markSelected(parseInt(currentVote, 10));
       }
+
       subscribeRealtime();
     })();
 
@@ -378,8 +407,13 @@
         .from('votes')
         .select('option_index');
 
-      if (error) { console.error('fetchCounts error', error); return; }
+      if (error) {
+        console.error('fetchCounts error', error);
+        showError(`Supabase error (${error.code || error.status || 'unknown'}): ${error.message}`);
+        return;
+      }
 
+      hideError();
       counts = [0, 0, 0, 0];
       (data || []).forEach(row => {
         if (row.option_index >= 0 && row.option_index <= 3) {
@@ -405,6 +439,7 @@
 
         if (delErr) {
           console.error('delete error', delErr);
+          showError(`Could not remove previous vote: ${delErr.message}`);
           setButtonsLocked(false);
           voting = false;
           return;
@@ -417,6 +452,7 @@
 
       if (insErr) {
         console.error('insert error', insErr);
+        showError(`Could not save vote: ${insErr.message}`);
         setButtonsLocked(false);
         voting = false;
         return;
@@ -445,6 +481,16 @@
     }
 
     // ── UI helpers ───────────────────────────────────────────────────────────
+    function showError(msg) {
+      const banner = document.getElementById('error-banner');
+      document.getElementById('error-detail').textContent = msg;
+      banner.style.display = 'block';
+    }
+
+    function hideError() {
+      document.getElementById('error-banner').style.display = 'none';
+    }
+
     function showThankyou() {
       document.getElementById('thankyou').style.display = 'block';
     }
