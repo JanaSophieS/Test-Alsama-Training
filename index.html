@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alsama Poll</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: #ffffff;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: #8B1A4A;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .topbar-survey {
+      background: #ffffff;
+      color: #8B1A4A;
+      font-family: 'Open Sans', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 4px 14px;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .topbar-tagline {
+      color: #f0e6ec;
+      font-size: 13px;
+      text-align: center;
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .topbar-brand {
+      font-family: 'Playfair Display', serif;
+      color: #ffffff;
+      font-size: 17px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ── Main card ── */
+    .container {
+      max-width: 680px;
+      margin: 40px auto;
+      padding: 0 20px 60px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e8d5df;
+      border-radius: 16px;
+      padding: 36px 40px;
+      box-shadow: 0 4px 24px rgba(139,26,74,0.07);
+    }
+
+    .question {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      line-height: 1.45;
+      color: #8B1A4A;
+      margin-bottom: 28px;
+    }
+
+    /* ── Vote options ── */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #faf5f8;
+      border: 1.5px solid #e8d5df;
+      border-radius: 10px;
+      padding: 14px 18px;
+      cursor: pointer;
+      text-align: left;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 15px;
+      color: #1a1a1a;
+      transition: border-color 0.18s, background 0.18s, transform 0.1s;
+      width: 100%;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: #8B1A4A;
+      background: #f0e6ec;
+      transform: translateY(-1px);
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+      opacity: 0.55;
+    }
+
+    .letter-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #8B1A4A;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ── Thank-you ── */
+    .thankyou {
+      display: none;
+      text-align: center;
+      padding: 10px 0 20px;
+    }
+
+    .thankyou-icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .thankyou h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      color: #8B1A4A;
+      margin-bottom: 6px;
+    }
+
+    .thankyou p {
+      font-size: 14px;
+      color: #666;
+    }
+
+    /* ── Bar chart ── */
+    .chart {
+      display: none;
+      margin-top: 28px;
+    }
+
+    .chart-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #8B1A4A;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+    }
+
+    .chart-row {
+      margin-bottom: 14px;
+    }
+
+    .chart-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 5px;
+      font-size: 13px;
+      color: #444;
+    }
+
+    .chart-letter {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #8B1A4A;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .bar-track {
+      background: #f0e6ec;
+      border-radius: 6px;
+      height: 22px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      background: #8B1A4A;
+      height: 100%;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+      transition: width 0.5s ease;
+      min-width: 0;
+    }
+
+    .bar-pct {
+      font-size: 11px;
+      font-weight: 600;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+
+    .bar-pct-outside {
+      font-size: 12px;
+      font-weight: 600;
+      color: #8B1A4A;
+      margin-left: 8px;
+      white-space: nowrap;
+    }
+
+    .bar-row-inner {
+      display: flex;
+      align-items: center;
+    }
+
+    .bar-track-wrap {
+      flex: 1;
+    }
+
+    .chart-total {
+      text-align: right;
+      font-size: 12px;
+      color: #999;
+      margin-top: 10px;
+    }
+
+    /* ── Loading ── */
+    .loading {
+      font-size: 13px;
+      color: #aaa;
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 520px) {
+      .topbar { flex-direction: column; gap: 6px; text-align: center; }
+      .topbar-tagline { font-size: 12px; }
+      .card { padding: 24px 20px; }
+      .question { font-size: 17px; }
+      .option-btn { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <span class="topbar-survey">Survey</span>
+    <span class="topbar-tagline">Listening to Alsama voices helps improve our delivery</span>
+    <span class="topbar-brand">Alsama ✦</span>
+  </div>
+
+  <div class="container">
+    <div class="card">
+
+      <p class="question">What aspect of Alsama's support has had the greatest impact on your experience?</p>
+
+      <div id="options-section" class="options">
+        <button class="option-btn" onclick="castVote(0)">
+          <span class="letter-circle">A</span>
+          Quality of teaching and mentorship
+        </button>
+        <button class="option-btn" onclick="castVote(1)">
+          <span class="letter-circle">B</span>
+          Emotional and pastoral care
+        </button>
+        <button class="option-btn" onclick="castVote(2)">
+          <span class="letter-circle">C</span>
+          Access to resources and facilities
+        </button>
+        <button class="option-btn" onclick="castVote(3)">
+          <span class="letter-circle">D</span>
+          Community and belonging
+        </button>
+      </div>
+
+      <div id="thankyou" class="thankyou">
+        <div class="thankyou-icon">✓</div>
+        <h2>Thank you for your response!</h2>
+        <p>Here's how others have voted so far.</p>
+      </div>
+
+      <div id="chart" class="chart">
+        <div class="chart-title">Live Results</div>
+        <div id="chart-rows"></div>
+        <div id="chart-total" class="chart-total"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ── Config ──────────────────────────────────────────────────────────────
+    const SUPABASE_URL  = 'YOUR_SUPABASE_URL';   // TODO: replace with your value
+    const SUPABASE_ANON = 'YOUR_SUPABASE_ANON_KEY'; // TODO: replace with your value
+    const STORAGE_KEY   = 'alsama_poll_voted';
+
+    const OPTIONS = [
+      { letter: 'A', text: 'Quality of teaching and mentorship' },
+      { letter: 'B', text: 'Emotional and pastoral care' },
+      { letter: 'C', text: 'Access to resources and facilities' },
+      { letter: 'D', text: 'Community and belonging' },
+    ];
+
+    // ── Init Supabase ────────────────────────────────────────────────────────
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // ── State ────────────────────────────────────────────────────────────────
+    let counts = [0, 0, 0, 0];
+    const hasVoted = !!localStorage.getItem(STORAGE_KEY);
+
+    // ── Boot ─────────────────────────────────────────────────────────────────
+    (async function init() {
+      if (hasVoted) {
+        showResultsView();
+      }
+      await fetchCounts();
+      renderChart();
+      subscribeRealtime();
+    })();
+
+    // ── Fetch totals ─────────────────────────────────────────────────────────
+    async function fetchCounts() {
+      const { data, error } = await db
+        .from('votes')
+        .select('option_index');
+
+      if (error) { console.error('fetchCounts error', error); return; }
+
+      counts = [0, 0, 0, 0];
+      (data || []).forEach(row => {
+        if (row.option_index >= 0 && row.option_index <= 3) {
+          counts[row.option_index]++;
+        }
+      });
+    }
+
+    // ── Cast vote ────────────────────────────────────────────────────────────
+    async function castVote(index) {
+      disableButtons();
+
+      const { error } = await db
+        .from('votes')
+        .insert([{ option_index: index }]);
+
+      if (error) {
+        console.error('insert error', error);
+        enableButtons();
+        return;
+      }
+
+      localStorage.setItem(STORAGE_KEY, '1');
+      counts[index]++;
+      showResultsView();
+      renderChart();
+    }
+
+    // ── Realtime subscription ────────────────────────────────────────────────
+    function subscribeRealtime() {
+      db.channel('votes-channel')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'votes' }, async () => {
+          await fetchCounts();
+          renderChart();
+        })
+        .subscribe();
+    }
+
+    // ── UI helpers ───────────────────────────────────────────────────────────
+    function showResultsView() {
+      document.getElementById('options-section').style.display = 'none';
+      document.getElementById('thankyou').style.display = 'block';
+      document.getElementById('chart').style.display = 'block';
+    }
+
+    function disableButtons() {
+      document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+    }
+
+    function enableButtons() {
+      document.querySelectorAll('.option-btn').forEach(b => b.disabled = false);
+    }
+
+    function renderChart() {
+      const total = counts.reduce((a, b) => a + b, 0);
+      const container = document.getElementById('chart-rows');
+      container.innerHTML = '';
+
+      OPTIONS.forEach((opt, i) => {
+        const pct = total === 0 ? 0 : Math.round((counts[i] / total) * 100);
+        const showInside = pct >= 10;
+
+        const row = document.createElement('div');
+        row.className = 'chart-row';
+        row.innerHTML = `
+          <div class="chart-label">
+            <span class="chart-letter">${opt.letter}</span>
+            <span>${opt.text}</span>
+          </div>
+          <div class="bar-row-inner">
+            <div class="bar-track-wrap">
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${pct}%">
+                  ${showInside ? `<span class="bar-pct">${pct}%</span>` : ''}
+                </div>
+              </div>
+            </div>
+            ${!showInside ? `<span class="bar-pct-outside">${pct}%</span>` : ''}
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      document.getElementById('chart-total').textContent =
+        total === 1 ? '1 response' : `${total} responses`;
+    }
+  </script>
+
+</body>
+</html>
